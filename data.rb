@@ -2,55 +2,44 @@ require 'rest-client'
 require 'json'
 require 'pry'
 
-class Candidate
+class GetData
 
-  attr_accessor :candidates, :cands
+  attr_accessor :pols
+
+  @@politicians = []
 
   def initialize
 
-    @candidates = []
-    @cands = []
+    @pols = []
+  end
 
-  def find_candidates_data(arr)
+  def find_politicians_data(arr)
     arr.each do |state|
       response = RestClient.get "https://www.opensecrets.org/api/?method=getLegislators&id="+"#{state}"+"&apikey=1c75e9b1efe4f5eb843c6397427019e9&output=json"
       json = JSON.parse(response.body)
-      @cands << json
+      @pols << json
     end
-
   end
 
-  def candidates_hashes #(arr)
-    #json = find_candidates_data(arr) ==> didn't work
+  def politicians_hashes #(arr)
+    #json = find_politicians_data(arr) ==> didn't work
 
-    @candidates << @cands.map do |cand|
+    @@politicians << @pols.map do |pol|
       #binding.pry
-      cand["response"]["legislator"].map do |congress|
-    #@candidates << json["response"]["legislator"].map do |congress|
+      pol["response"]["legislator"].map do |congress|
+    #@politicians << json["response"]["legislator"].map do |congress|
         {
           name: congress["@attributes"]["firstlast"],
           party: congress["@attributes"]["party"],
-          office: congress["@attributes"]["office"],
+          office: congress["@attributes"]["office"][0..1],
           gender: congress["@attributes"]["gender"],
           cid: congress["@attributes"]["cid"]
         }
       end
-      end
     end
   end
 
-  def candidates
-    @candidates.flatten
+  def self.politicians
+    @@politicians.flatten
   end
 end
-
-# def search_for_term
-#     response = RestClient.get "https://www.opensecrets.org/api/?method=getLegislators&id=NY&apikey=1c75e9b1efe4f5eb843c6397427019e9&output=json"
-#     json = JSON.parse(response.body)
-#     #binding.pry
-#     json
-# end
-
-# json["response"]["legislator"].map do |congress|
-#   congress["@attributes"]["firstlast"]
-# end
